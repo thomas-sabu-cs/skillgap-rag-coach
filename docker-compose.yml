@@ -1,0 +1,48 @@
+# skillgap-rag-coach — local development
+# Usage: docker compose up
+# Brings up: Postgres, FastAPI backend, Next.js frontend
+
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: skillgap
+      POSTGRES_PASSWORD: skillgap_dev
+      POSTGRES_DB: skillgap
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U skillgap -d skillgap"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgresql://skillgap:skillgap_dev@db:5432/skillgap
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      USE_LLM_MODE: ${USE_LLM_MODE:-false}
+    depends_on:
+      db:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:8000
+    depends_on:
+      - backend
+
+volumes:
+  pgdata:
