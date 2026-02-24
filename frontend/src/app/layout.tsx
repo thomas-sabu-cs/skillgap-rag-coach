@@ -5,7 +5,7 @@ import "./globals.css";
 const dmSans = DM_Sans({ subsets: ["latin"], weight: ["400", "600", "700"] });
 
 export const metadata: Metadata = {
-  title: "SkillGap RAG Coach",
+  title: "SkillGap AI Coach",
   description: "Analyze your resume against a job description and get a match score and improvement plan.",
 };
 

@@ -12,6 +12,7 @@ A web app that takes a user’s **resume text** and a **job description**, extra
   - **Overlapping skills:** Skills that appear in both.
   - **Missing skills:** Skills from the job that we didn’t find in your resume.
   - **Suggested next steps:** A short, actionable bullet plan to improve your fit.
+  - **Recent history:** Your last 10 runs are saved with a sidebar to quickly reload any past analysis.
 
 The app runs a **deterministic baseline** (keyword/skill dictionary + scoring) by default, so it works with **no external API keys**. You can optionally enable **LLM mode** (via `OPENAI_API_KEY` + `USE_LLM_MODE=true`) for AI-generated improvement suggestions.
 
@@ -146,6 +147,8 @@ Set `NEXT_PUBLIC_API_URL=http://localhost:8000` in `.env` so the frontend talks 
 | GET    | `/health`  | Health check               |
 | POST   | `/analyze` | Analyze resume vs job      |
 | GET    | `/history` | Last 10 analysis runs     |
+| DELETE | `/history` | Clear all analysis runs    |
+| DELETE | `/history/{id}` | Delete one analysis run |
 
 ### POST /analyze
 
@@ -179,13 +182,32 @@ Set `NEXT_PUBLIC_API_URL=http://localhost:8000` in `.env` so the frontend talks 
 ```
 
 - `overlapping_skills` includes a resume snippet (`evidence`) for each skill.
-- Every successful analysis is stored in Postgres.
+- Every successful analysis is stored in Postgres (**except** exact consecutive duplicate runs, which are skipped to avoid cluttering history).
 - `mode` is either `"baseline"` or `"llm"` depending on configuration.
 - **4xx/5xx:** JSON body with `detail` string (e.g. validation or server error).
 
 ### GET /history
 
-Returns the last 10 analysis runs. Each item includes `id`, `timestamp`, `resume_summary`, `job_title_guess`, `match_score`, and full `result` (same shape as POST /analyze response).
+Returns the last 10 analysis runs. Each item includes:
+
+- `id`
+- `timestamp`
+- `resume_summary`
+- `job_title_guess`
+- `resume_text` (full resume input used for that run)
+- `job_description` (full job description input)
+- `match_score`
+- `result` (same shape as POST /analyze response)
+
+The frontend uses `resume_text` and `job_description` so that clicking a history item **re-populates the inputs and results** for that run.
+
+### DELETE /history
+
+Clears all stored analysis runs.
+
+### DELETE /history/{id}
+
+Deletes a single stored analysis run by id.
 
 ---
 

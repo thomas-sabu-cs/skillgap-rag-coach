@@ -2,8 +2,8 @@
   --bg: #0f0f12;
   --surface: #18181c;
   --border: #2a2a30;
-  --text: #e8e8ed;
-  --muted: #9a9aa5;
+  --text: #f2f2f7;
+  --muted: #c2c2cc;
   --accent: #6366f1;
   --accent-hover: #818cf8;
   --success: #22c55e;
@@ -24,6 +24,8 @@ body {
   background: var(--bg);
   color: var(--text);
   font-family: "DM Sans", system-ui, sans-serif;
+  font-size: 18px;
+  line-height: 1.55;
 }
 
 a {

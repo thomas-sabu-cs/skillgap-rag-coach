@@ -19,6 +19,8 @@ export interface HistoryItem {
   timestamp: string;
   resume_summary: string;
   job_title_guess: string;
+  resume_text: string;
+  job_description: string;
   match_score: number;
   result: AnalysisResponse;
 }

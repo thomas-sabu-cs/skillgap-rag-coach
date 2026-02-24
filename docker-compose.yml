@@ -1,4 +1,4 @@
-# skillgap-rag-coach — local development
+# SkillGap AI Coach — local development
 # Usage: docker compose up
 # Brings up: Postgres, FastAPI backend, Next.js frontend
 

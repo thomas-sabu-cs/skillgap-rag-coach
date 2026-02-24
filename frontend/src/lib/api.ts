@@ -36,3 +36,23 @@ export async function getHistory(): Promise<HistoryItem[]> {
   return res.json() as Promise<HistoryItem[]>;
 }
 
+export async function clearHistory(): Promise<void> {
+  const base = getApiUrl();
+  const res = await fetch(`${base}/history`, { method: "DELETE" });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    const message = (body as { detail?: string })?.detail ?? res.statusText;
+    throw new Error(message);
+  }
+}
+
+export async function deleteHistoryItem(id: number): Promise<void> {
+  const base = getApiUrl();
+  const res = await fetch(`${base}/history/${id}`, { method: "DELETE" });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    const message = (body as { detail?: string })?.detail ?? res.statusText;
+    throw new Error(message);
+  }
+}
+
