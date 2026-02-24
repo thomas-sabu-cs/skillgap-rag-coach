@@ -55,7 +55,7 @@ def test_compute_match_score_empty_job() -> None:
 def test_suggest_next_steps_has_missing() -> None:
     steps = suggest_next_steps_baseline(
         missing_skills=["python", "aws"],
-        overlapping_skills=["git", "sql"],
+        overlapping_skill_names=["git", "sql"],
     )
     assert len(steps) >= 3
     assert any("python" in s.lower() or "aws" in s.lower() for s in steps)
@@ -66,7 +66,12 @@ def test_run_baseline_analysis_full_flow() -> None:
     job = "We need Python, React, Kubernetes, and AWS. Experience with REST APIs."
     result = run_baseline_analysis(resume, job)
     assert 0 <= result.match_score <= 100
-    assert "python" in result.overlapping_skills or "react" in result.overlapping_skills
+    overlap_skills = [s.skill for s in result.overlapping_skills]
+    assert "python" in overlap_skills or "react" in overlap_skills
     assert "kubernetes" in result.missing_skills or "k8s" in result.missing_skills
     assert len(result.suggested_next_steps) >= 3
     assert result.mode == "baseline"
+    # Evidence: each overlapping skill should have a non-empty evidence snippet
+    for item in result.overlapping_skills:
+        assert item.skill
+        assert item.evidence

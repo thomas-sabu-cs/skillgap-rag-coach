@@ -25,9 +25,10 @@ def run_llm_analysis(resume_text: str, job_description: str) -> AnalysisResult:
         import openai
         client = openai.OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
         # Build a short prompt for next steps only (keep score/skills from baseline for consistency)
+        overlap_names = [s.skill for s in baseline.overlapping_skills]
         prompt = f"""You are a career coach. Given:
 - Job description (excerpt): {job_description[:1500]}
-- Resume skills we detected: {baseline.overlapping_skills}
+- Resume skills we detected: {overlap_names}
 - Missing skills for the job: {baseline.missing_skills}
 - Current match score: {baseline.match_score}/100
 
@@ -53,7 +54,7 @@ Provide 4-5 short, actionable bullet points as "Suggested next steps" for the ca
         if steps:
             return AnalysisResult(
                 match_score=baseline.match_score,
-                overlapping_skills=baseline.overlapping_skills,
+                overlapping_skills=baseline.overlapping_skills,  # already list of SkillWithEvidence
                 missing_skills=baseline.missing_skills,
                 suggested_next_steps=steps[:6],
                 mode="llm",

@@ -1,4 +1,4 @@
-import type { AnalysisResponse } from "@/types";
+import type { AnalysisResponse, HistoryItem } from "@/types";
 
 const getApiUrl = (): string => {
   if (typeof window !== "undefined") {
@@ -24,3 +24,15 @@ export async function analyze(resumeText: string, jobDescription: string): Promi
   }
   return res.json() as Promise<AnalysisResponse>;
 }
+
+export async function getHistory(): Promise<HistoryItem[]> {
+  const base = getApiUrl();
+  const res = await fetch(`${base}/history`);
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    const message = (body as { detail?: string })?.detail ?? res.statusText;
+    throw new Error(message);
+  }
+  return res.json() as Promise<HistoryItem[]>;
+}
+

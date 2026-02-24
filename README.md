@@ -56,11 +56,27 @@ The app runs a **deterministic baseline** (keyword/skill dictionary + scoring) b
 
 ## Screenshots
 
-<!-- Add a screenshot of the main page here -->
-<!-- ![Main page](docs/screenshot-main.png) -->
+![Main page](docs/screenshot-main.png)
 
-<!-- Add a screenshot of the results view here -->
-<!-- ![Results](docs/screenshot-results.png) -->
+![Results](docs/screenshot-results.png)
+
+### Sample inputs for consistent screenshots
+
+Use these exact inputs to get reproducible results for the results screenshot (baseline mode).
+
+**Resume (paste in first text area):**
+
+```
+Software Engineer with 4 years of experience. Proficient in Python, React, and PostgreSQL. Built REST APIs with FastAPI and Django. Used Docker for deployment. Strong git workflow and agile practices. Experience with data analysis and SQL.
+```
+
+**Job description (paste in second text area):**
+
+```
+We are hiring a Backend Engineer. Required: Python, REST APIs, PostgreSQL, Docker, and Kubernetes. Experience with AWS or Terraform preferred. Knowledge of React and microservices a plus. We use agile and CI/CD.
+```
+
+**Expected result (baseline):** Match score ~57–67%, overlapping skills (e.g. python, react, postgresql, docker, git, agile, rest, api), missing skills (e.g. kubernetes, aws, terraform), and 4–5 suggested next steps.
 
 ---
 
@@ -125,10 +141,11 @@ Set `NEXT_PUBLIC_API_URL=http://localhost:8000` in `.env` so the frontend talks 
 
 ### Endpoints
 
-| Method | Path      | Description                |
-|--------|-----------|----------------------------|
-| GET    | `/health` | Health check               |
-| POST   | `/analyze`| Analyze resume vs job      |
+| Method | Path       | Description                |
+|--------|------------|----------------------------|
+| GET    | `/health`  | Health check               |
+| POST   | `/analyze` | Analyze resume vs job      |
+| GET    | `/history` | Last 10 analysis runs     |
 
 ### POST /analyze
 
@@ -146,7 +163,10 @@ Set `NEXT_PUBLIC_API_URL=http://localhost:8000` in `.env` so the frontend talks 
 ```json
 {
   "match_score": 67,
-  "overlapping_skills": ["python", "react", "postgresql"],
+  "overlapping_skills": [
+    { "skill": "python", "evidence": "Built backend services using Python and FastAPI." },
+    { "skill": "react", "evidence": "Developed UIs with React and TypeScript." }
+  ],
   "missing_skills": ["kubernetes", "aws"],
   "suggested_next_steps": [
     "Focus on building or highlighting these skills: kubernetes, aws.",
@@ -158,8 +178,14 @@ Set `NEXT_PUBLIC_API_URL=http://localhost:8000` in `.env` so the frontend talks 
 }
 ```
 
+- `overlapping_skills` includes a resume snippet (`evidence`) for each skill.
+- Every successful analysis is stored in Postgres.
 - `mode` is either `"baseline"` or `"llm"` depending on configuration.
 - **4xx/5xx:** JSON body with `detail` string (e.g. validation or server error).
+
+### GET /history
+
+Returns the last 10 analysis runs. Each item includes `id`, `timestamp`, `resume_summary`, `job_title_guess`, `match_score`, and full `result` (same shape as POST /analyze response).
 
 ---
 
@@ -173,7 +199,8 @@ Set `NEXT_PUBLIC_API_URL=http://localhost:8000` in `.env` so the frontend talks 
 
 ## Roadmap
 
-- [ ] **Persistence:** Store analysis runs in Postgres (optional table + API).
+- [x] **Persistence:** Store analysis runs in Postgres; GET /history returns last 10 runs.
+- [x] **Evidence mapping:** Overlapping skills include resume snippets (sentence/context) where each skill was found.
 - [ ] **pgvector / embeddings:** Optional skill similarity via embeddings when available; fallback to TF-IDF or current keyword match.
 - [ ] **Auth:** Optional login to save and compare multiple resumes/jobs.
 - [ ] **Export:** Download report as PDF or markdown.
